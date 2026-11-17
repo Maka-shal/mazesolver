@@ -46,4 +46,37 @@ verification_grille(labyrinthe())
 affiche_labyrinthe (labyrinthe())
 
 
-        
+
+def obtenir_voisins(labyrinthe, position):
+
+    ligne, colonne = position
+
+    directions = [
+        (-1, 0),  # Haut
+        (1, 0),   # Bas
+        (0, -1),  # Gauche
+        (0, 1)    # Droite
+    ]
+
+    voisins = []
+
+    nombre_lignes = len(labyrinthe)
+    nombre_colonnes = len(labyrinthe[0])
+
+    for dl, dc in directions:
+
+        nouvelle_ligne = ligne + dl
+        nouvelle_colonne = colonne + dc
+
+        if (0 <= nouvelle_ligne < nombre_lignes
+            and 0 <= nouvelle_colonne < nombre_colonnes):
+
+            if labyrinthe[nouvelle_ligne-1][nouvelle_colonne-1] == "0":
+
+                voisins.append((nouvelle_ligne, nouvelle_colonne))
+
+    return voisins
+
+
+# nouvel_case = obtenir_voisins(labyrinthe(), (14, 14))
+# print(nouvel_case)
