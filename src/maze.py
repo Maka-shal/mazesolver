@@ -1,3 +1,5 @@
+from collections import deque
+
 def labyrinthe ():
     grille = [
     "1111111111111111111111111111111111111",
@@ -42,8 +44,8 @@ def affiche_labyrinthe (une_liste):
         print ()
 
 
-verification_grille(labyrinthe())
-affiche_labyrinthe (labyrinthe())
+# verification_grille(labyrinthe())
+# affiche_labyrinthe (labyrinthe())
 
 
 
@@ -71,7 +73,7 @@ def obtenir_voisins(labyrinthe, position):
         if (0 <= nouvelle_ligne < nombre_lignes
             and 0 <= nouvelle_colonne < nombre_colonnes):
 
-            if labyrinthe[nouvelle_ligne-1][nouvelle_colonne-1] == "0":
+            if labyrinthe[nouvelle_ligne][nouvelle_colonne] == "0":
 
                 voisins.append((nouvelle_ligne, nouvelle_colonne))
 
@@ -80,3 +82,67 @@ def obtenir_voisins(labyrinthe, position):
 
 # nouvel_case = obtenir_voisins(labyrinthe(), (14, 14))
 # print(nouvel_case)
+
+def solveur_bfs(labyrinthe, depart, arrivee):
+
+    # 1. Vérifier les positions
+    nombre_lignes = len(labyrinthe)
+    nombre_colonnes = len(labyrinthe[0])
+
+    for ligne, colonne in (depart, arrivee):
+        if not (0 <= ligne < nombre_lignes
+                and 0 <= colonne < nombre_colonnes):
+            return None
+
+        if labyrinthe[ligne][colonne] != "0":
+            return None
+
+    # 2. Initialiser la file
+    file = deque([depart])
+
+    # 3. Enregistrer les cases visitées
+    visites = {depart}
+
+    # 4. Enregistrer les prédécesseurs
+    predecesseur = {depart: None}
+
+    # 5. Explorer le labyrinthe
+    while file:
+
+        courant = file.popleft()
+
+        # Vérifier si la sortie est trouvée
+        if courant == arrivee:
+
+            chemin = []
+            position = arrivee
+
+            while position is not None:
+                chemin.append(position)
+                position = predecesseur[position]
+
+            chemin.reverse()
+            return chemin
+
+        # Explorer les voisins accessibles
+        voisins = obtenir_voisins(labyrinthe, courant)
+
+        for voisin in voisins:
+
+            if voisin not in visites:
+
+                visites.add(voisin)
+
+                predecesseur[voisin] = courant
+
+                file.append(voisin)
+
+    # Aucun chemin trouvé
+    return None
+
+depart = (24, 0)
+arrivee = (1, 36)
+
+resultat = solveur_bfs(labyrinthe (), depart, arrivee)
+
+print(resultat)

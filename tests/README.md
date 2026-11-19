@@ -510,3 +510,192 @@ La recherche du chemin sera abordée dans les prochaines étapes du projet.
 **État d'avancement :** les étapes 1 à 4 constituent les bases de la représentation du labyrinthe et de la reconnaissance des déplacements accessibles.
 
 Les prochaines étapes permettront d'utiliser ces connaissances pour rechercher et reconstruire un chemin vers la sortie.
+
+
+##### DEADPOOL
+
+Cette fonction cherche un chemin entre deux cases d’un labyrinthe avec l’algorithme **BFS** (*Breadth-First Search*, ou recherche en largeur). Elle explore d’abord les cases proches du départ, puis celles qui sont plus éloignées. Si chaque déplacement compte pour une étape, BFS trouve un chemin avec le moins de déplacements possible.
+
+### Importer la file d’attente
+
+```python
+from collections import deque
+```
+
+Cette ligne importe `deque`, une structure de données fournie par Python. Elle est utilisée ici comme une file d’attente : on ajoute les nouvelles cases à la fin et on retire la prochaine case à explorer au début. Cela permet de parcourir le labyrinthe dans l’ordre où les cases ont été découvertes.
+
+### Définir la fonction
+
+```python
+def solveur_bfs(labyrinthe, depart, arrivee):
+```
+
+Cette ligne définit une fonction appelée `solveur_bfs`. Elle reçoit trois informations : le labyrinthe, la position de départ et la position d’arrivée. La fonction renverra le chemin trouvé sous forme d’une liste de positions, ou `None` si les positions ne sont pas valides ou si aucun chemin n’existe.
+
+### Vérifier les dimensions du labyrinthe
+
+```python
+nombre_lignes = len(labyrinthe)
+```
+
+`len(labyrinthe)` calcule le nombre de lignes du labyrinthe. Par exemple, si le labyrinthe contient cinq lignes, `nombre_lignes` vaut `5`.
+
+```python
+nombre_colonnes = len(labyrinthe[0])
+```
+
+`labyrinthe[0]` désigne la première ligne, et `len(labyrinthe[0])` en compte les colonnes. Cette méthode suppose que le labyrinthe contient au moins une ligne et que toutes ses lignes ont le même nombre de colonnes.
+
+### Vérifier le départ et l’arrivée
+
+```python
+for ligne, colonne in (depart, arrivee):
+```
+
+Cette boucle examine les deux positions : d’abord `depart`, puis `arrivee`. Chaque position est supposée être un couple de valeurs, comme `(ligne, colonne)`, que Python place dans les variables correspondantes.
+
+```python
+if not (0 <= ligne < nombre_lignes
+        and 0 <= colonne < nombre_colonnes):
+    return None
+```
+
+Cette condition vérifie que la position se trouve à l’intérieur du labyrinthe. L’indice de ligne doit être compris entre `0` et `nombre_lignes - 1`, et l’indice de colonne entre `0` et `nombre_colonnes - 1`. Si l’une des deux valeurs est en dehors de ces limites, la fonction s’arrête immédiatement et renvoie `None`.
+
+```python
+if labyrinthe[ligne][colonne] != "0":
+    return None
+```
+
+Cette condition vérifie que la case de départ ou d’arrivée est accessible. Dans ce code, `"0"` représente une case libre. Si la case contient autre chose — par exemple `"1"` pour un mur — la fonction renvoie `None`, car on ne peut pas commencer ou terminer sur cette case.
+
+### Préparer la file d’exploration
+
+```python
+file = deque([depart])
+```
+
+Cette ligne crée une file d’attente contenant déjà la position de départ. C’est la première case que l’algorithme va explorer. Comme la file fonctionne selon le principe « premier entré, premier sorti », les cases découvertes en premier seront examinées en premier.
+
+### Enregistrer les cases déjà découvertes
+
+```python
+visites = {depart}
+```
+
+Cette ligne crée un ensemble contenant le départ. L’ensemble `visites` sert à mémoriser les cases déjà découvertes. Cela évite de les ajouter plusieurs fois à la file et empêche l’algorithme de tourner en boucle.
+
+### Garder une trace du chemin
+
+```python
+predecesseur = {depart: None}
+```
+
+Cette ligne crée un dictionnaire qui associe chaque case à la case depuis laquelle elle a été découverte. Pour le départ, il n’y a pas de case précédente, donc sa valeur est `None`. Plus tard, ce dictionnaire permettra de remonter depuis l’arrivée jusqu’au départ pour reconstruire le chemin.
+
+### Explorer le labyrinthe
+
+```python
+while file:
+```
+
+Cette boucle continue tant que la file contient des positions à explorer. En Python, une file non vide est considérée comme vraie, et une file vide comme fausse. Si la file devient vide, cela signifie que toutes les cases accessibles ont été explorées sans trouver de chemin vers l’arrivée.
+
+```python
+courant = file.popleft()
+```
+
+Cette ligne retire la première position de la file et la stocke dans `courant`. C’est la case que l’algorithme examine maintenant. `popleft()` est adapté à une file, car il retire l’élément situé au début.
+
+### Vérifier si l’arrivée est atteinte
+
+```python
+if courant == arrivee:
+```
+
+Cette condition vérifie si la case examinée est l’arrivée. Si oui, l’algorithme a trouvé cette case et peut reconstruire le chemin pour le renvoyer.
+
+```python
+chemin = []
+position = arrivee
+```
+
+La première ligne crée une liste vide, `chemin`, qui recevra les positions du trajet. La deuxième initialise `position` avec l’arrivée : la reconstruction va commencer à cet endroit et remonter vers le départ.
+
+```python
+while position is not None:
+```
+
+Cette boucle remonte le chemin tant qu’il existe une position à traiter. Elle s’arrêtera lorsque `position` deviendra `None`, ce qui arrive après avoir remonté jusqu’au départ.
+
+```python
+chemin.append(position)
+```
+
+Cette ligne ajoute la position actuelle à la liste `chemin`. Le parcours commence à l’arrivée, donc les positions sont ajoutées dans l’ordre inverse du trajet.
+
+```python
+position = predecesseur[position]
+```
+
+Cette ligne remplace la position actuelle par son prédécesseur, c’est-à-dire la case depuis laquelle elle a été découverte. En répétant cette opération, l’algorithme remonte progressivement de l’arrivée vers le départ. Pour le départ, le prédécesseur vaut `None`, ce qui termine la boucle.
+
+```python
+chemin.reverse()
+```
+
+Comme les positions ont été ajoutées en partant de l’arrivée, cette ligne inverse la liste. Le chemin se retrouve alors dans le bon ordre : du départ jusqu’à l’arrivée.
+
+```python
+return chemin
+```
+
+Cette ligne renvoie le chemin trouvé. Par exemple, le résultat pourrait ressembler à `[(0, 0), (0, 1), (1, 1)]`, selon les coordonnées du labyrinthe.
+
+### Explorer les cases voisines
+
+```python
+voisins = obtenir_voisins(labyrinthe, courant)
+```
+
+Cette ligne demande à `obtenir_voisins` de fournir les cases voisines accessibles autour de `courant`. Cette fonction n’est pas montrée dans l’extrait : elle doit être définie ailleurs dans le programme. Elle devrait notamment éviter de renvoyer les cases situées hors du labyrinthe ou les murs.
+
+```python
+for voisin in voisins:
+```
+
+Cette boucle examine chaque voisin accessible trouvé autour de la case actuelle. L’algorithme va vérifier ces voisins un par un.
+
+```python
+if voisin not in visites:
+```
+
+Cette condition vérifie si le voisin n’a pas déjà été découvert. Si le voisin est déjà dans `visites`, il n’est pas nécessaire de le traiter une seconde fois.
+
+```python
+visites.add(voisin)
+```
+
+Cette ligne marque le voisin comme découvert en l’ajoutant à l’ensemble `visites`. On le marque dès sa découverte pour éviter de l’ajouter plusieurs fois à la file.
+
+```python
+predecesseur[voisin] = courant
+```
+
+Cette ligne mémorise que le voisin a été découvert depuis `courant`. Cette information sera utilisée plus tard pour reconstituer le chemin.
+
+```python
+file.append(voisin)
+```
+
+Cette ligne ajoute le voisin à la fin de la file. Il sera exploré plus tard, après les cases qui étaient déjà dans la file.
+
+### Si aucun chemin n’a été trouvé
+
+```python
+return None
+```
+
+Cette ligne est exécutée si la boucle `while file` se termine sans que l’arrivée ait été trouvée. Elle signifie qu’il n’existe aucun chemin accessible entre le départ et l’arrivée, selon les règles de déplacement définies par `obtenir_voisins`.
+
+**En résumé :** la fonction explore les cases une par une avec une file d’attente, mémorise d’où vient chaque case, puis reconstruit le trajet lorsque l’arrivée est atteinte. Le résultat est le chemin le plus court en nombre de déplacements, à condition que chaque déplacement ait le même coût et que `obtenir_voisins` renvoie correctement les cases accessibles.
